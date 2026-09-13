@@ -20,6 +20,7 @@ This demo for the **LILYGO T-HMI (ESP32-S3)** connects over Wi-Fi to Komoot's of
   - Average Speed (km/h) & Calories
 - Includes offline sample data if Wi-Fi / credentials are not yet configured.
 - Uses persistent touch calibration stored in Flash NVS (`Preferences`).
+- **Power Saving Standby:** Automatically turns off the screen backlight after 2 minutes of inactivity to save power. Tap anywhere on the screen or press the **BOOT button** to wake it back up.
 
 ## Configuration
 Copy `include/secrets.h.example` to `include/secrets.h` and enter your credentials:

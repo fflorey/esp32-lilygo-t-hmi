@@ -80,6 +80,11 @@ bool isLiveKomoot = false;
 bool showMapView = false; // Toggle state: false = Stats Grid, true = Route Map
 String statusMessage = "Initializing...";
 
+// Power Saving & Display Standby (2 minutes timeout)
+const unsigned long SCREEN_TIMEOUT_MS = 2 * 60 * 1000;
+unsigned long lastInteractionTime = 0;
+bool isScreenOn = true;
+
 // Callback for TJpg_Decoder to render decompressed JPEG blocks to TFT
 bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap) {
   if (y >= tft.height()) return 0;
@@ -114,6 +119,18 @@ void setBrightness(uint8_t value) {
     digitalWrite(BK_LIGHT_PIN, 1);
   }
   _brightness = value;
+}
+
+void setScreenPower(bool on) {
+  if (on == isScreenOn) return;
+  isScreenOn = on;
+  if (on) {
+    setBrightness(16);
+    Serial.println("Screen ON");
+  } else {
+    setBrightness(0);
+    Serial.println("Screen OFF (Standby)");
+  }
 }
 
 String formatDuration(int totalSeconds) {
@@ -610,6 +627,7 @@ void syncWithKomoot() {
 
   drawHeader();
   drawTourCard();
+  lastInteractionTime = millis();
 }
 
 // =========================================================================
@@ -621,6 +639,9 @@ void setup() {
   // 1. Power on peripherals (Display & Touch power latch)
   pinMode(PWR_EN_PIN, OUTPUT);
   digitalWrite(PWR_EN_PIN, HIGH);
+
+  // Physical button (BOOT pin) for manual wake-up
+  pinMode(BUTTON1_PIN, INPUT_PULLUP);
 
   // 2. Backlight setup
   pinMode(BK_LIGHT_PIN, OUTPUT);
@@ -686,10 +707,31 @@ void setup() {
 
   drawHeader();
   syncWithKomoot();
+  lastInteractionTime = millis();
 }
 
 void loop() {
+  // 1. Check physical BOOT button for wake-up / activity
+  if (digitalRead(BUTTON1_PIN) == LOW) {
+    lastInteractionTime = millis();
+    if (!isScreenOn) {
+      setScreenPower(true);
+      delay(250); // Debounce button
+      return;
+    }
+  }
+
+  // 2. Check Touch Interaction
   if (touch.pressed()) {
+    lastInteractionTime = millis();
+
+    // If screen was off in standby, wake up and ignore first touch (prevents unintended button actions)
+    if (!isScreenOn) {
+      setScreenPower(true);
+      delay(300); // Debounce wake-up touch
+      return;
+    }
+
     int x = touch.X();
     int y = touch.Y();
 
@@ -699,7 +741,7 @@ void loop() {
     x = constrain(x, 0, 239);
     y = constrain(y, 0, 319);
 
-    // 1. Check Card Touch (y: 54 to 256, x: 8 to 232) -> TOGGLE MAP / STATS!
+    // Check Card Touch (y: 54 to 256, x: 8 to 232) -> TOGGLE MAP / STATS!
     if (y >= 54 && y <= 256 && x >= 8 && x <= 232) {
       showMapView = !showMapView;
       drawTourCard();
@@ -707,7 +749,7 @@ void loop() {
       return;
     }
 
-    // 2. Check Bottom Navigation Buttons (y: 260 to 318)
+    // Check Bottom Navigation Buttons (y: 260 to 318)
     if (y >= 260 && y <= 318) {
       // PREV Button (x: 8 to 76)
       if (x >= 8 && x <= 76) {
@@ -738,5 +780,11 @@ void loop() {
     }
   }
 
-  delay(15);
+  // 3. Automatic screen timeout after 2 minutes of inactivity
+  if (isScreenOn && (millis() - lastInteractionTime >= SCREEN_TIMEOUT_MS)) {
+    setScreenPower(false);
+  }
+
+  // Sleep longer in standby to conserve CPU power
+  delay(isScreenOn ? 15 : 50);
 }

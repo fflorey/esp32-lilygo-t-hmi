@@ -52,6 +52,7 @@ This repository contains firmware projects and demos developed for the **LILYGO 
   - Interactive touch UI to page through tours (`PREV`, `NEXT`) and trigger a manual sync (`SYNC`).
   - Displays workout statistics: distance, moving time, elevation gain, avg speed, and calories burned.
   - Falls back to bundled offline sample data if Wi-Fi or credentials are unavailable.
+  - **Power-Saving Standby:** Automatically turns off the screen after 2 minutes of inactivity; wake up with a screen tap or by pressing the **BOOT button**.
 
 ---
 
