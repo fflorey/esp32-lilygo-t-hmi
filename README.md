@@ -41,6 +41,11 @@ This repository contains firmware projects and demos developed for the **LILYGO 
 
 ### 2. [Demo 2: Komoot Tour & Training Viewer](demos/02_komoot_tours/README.md)
 * **Path:** `demos/02_komoot_tours/` (also currently mirrored in `src/main.cpp`)
+
+<p align="left">
+  <img src="docs/images/live_preview.jpg" alt="Komoot Tour Viewer on LILYGO T-HMI" width="260" />
+</p>
+
 * **Features:**
   - Connects to Wi-Fi and fetches your latest completed tours (cycling, hiking, running) via the Komoot REST API.
   - Downloads and renders tour map thumbnail previews in JPEG format.

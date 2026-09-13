@@ -2,6 +2,10 @@
 
 This demo for the **LILYGO T-HMI (ESP32-S3)** connects over Wi-Fi to Komoot's official REST API to display your latest recorded bike rides, runs, and hikes directly on the 2.8" color screen.
 
+<p align="left">
+  <img src="../../docs/images/live_preview.jpg" alt="Komoot Tour Viewer Live" width="280" />
+</p>
+
 ## Features
 - Connects securely to `api.komoot.de` over HTTPS using your Komoot credentials.
 - Automatically fetches your latest completed / driven tours.
